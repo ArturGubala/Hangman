@@ -5,7 +5,7 @@ import androidx.room.RoomDatabase
 
 @Database(
     entities = [GameResultEntity::class],
-    version = 1
+    version = 2
 )
 abstract class HangmanDatabase : RoomDatabase() {
     abstract fun gameResultDao(): GameResultDao

@@ -38,8 +38,8 @@ class LeaderboardScreenTest {
                 LeaderboardScreen(
                     state = LeaderboardState(
                         results = listOf(
-                            GameResultUi(1L, "ELEPHANT", "Animals", 2, 6, true, "Apr 16, 2026 · 10:30"),
-                            GameResultUi(2L, "PYTHON", "Technology", 6, 6, false, "Apr 15, 2026 · 18:00")
+                            GameResultUi(1L, "ARTURO", 1450, "SKATEBOARD", "Sports", true),
+                            GameResultUi(2L, "PLAYER1", 0, "PYTHON", "Technology", false)
                         )
                     ),
                     onAction = {}
@@ -47,9 +47,9 @@ class LeaderboardScreenTest {
             }
         }
 
-        composeTestRule.onNodeWithText("ELEPHANT").assertIsDisplayed()
-        composeTestRule.onNodeWithText("PYTHON").assertIsDisplayed()
-        composeTestRule.onNodeWithText("Won").assertIsDisplayed()
-        composeTestRule.onNodeWithText("Lost").assertIsDisplayed()
+        composeTestRule.onNodeWithText("ARTURO    ").assertIsDisplayed()
+        composeTestRule.onNodeWithText("PLAYER1   ").assertIsDisplayed()
+        composeTestRule.onNodeWithText("  1450").assertIsDisplayed()
+        composeTestRule.onNodeWithText("     0").assertIsDisplayed()
     }
 }

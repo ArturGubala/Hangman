@@ -39,20 +39,16 @@ class LeaderboardViewModelTest {
     }
 
     @Test
-    fun `initial state has isLoading true before results arrive`() = runTest {
-        val freshRepo = FakeLeaderboardRepository()
-        // Create viewModel after setting up repo but before emitting
-        val freshViewModel = LeaderboardViewModel(freshRepo)
-        // With UnconfinedTestDispatcher, the flow is immediately collected
-        // so isLoading will flip to false right away — just verify not crashing
-        assertThat(freshViewModel.state.value.isLoading).isFalse()
+    fun `initial state is not loading with unconfined dispatcher`() = runTest {
+        // With UnconfinedTestDispatcher, the flow is collected immediately
+        assertThat(viewModel.state.value.isLoading).isFalse()
     }
 
     @Test
     fun `state emits results from repository mapped to UI models`() = runTest {
         val results = listOf(
-            GameResult(1L, "ELEPHANT", "Animals", 2, 6, true, 1000L),
-            GameResult(2L, "PYTHON", "Technology", 6, 6, false, 2000L)
+            GameResult(1L, "ELEPHANT", "Animals", 2, 6, true, 1000, "ARTURO", 1000L),
+            GameResult(2L, "PYTHON", "Technology", 6, 6, false, 0, "PLAYER1", 2000L)
         )
         fakeRepository.emitResults(results)
 
@@ -60,6 +56,8 @@ class LeaderboardViewModelTest {
         assertThat(state.isLoading).isFalse()
         assertThat(state.results.size).isEqualTo(2)
         assertThat(state.results[0].word).isEqualTo("ELEPHANT")
+        assertThat(state.results[0].nickname).isEqualTo("ARTURO")
+        assertThat(state.results[0].score).isEqualTo(1000)
         assertThat(state.results[0].won).isTrue()
         assertThat(state.results[1].word).isEqualTo("PYTHON")
         assertThat(state.results[1].won).isFalse()

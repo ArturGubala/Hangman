@@ -9,16 +9,24 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -124,6 +132,7 @@ fun GamePlayScreen(
                     GameResultBanner(
                         won = true,
                         revealedWord = null,
+                        score = state.pendingScore,
                         onPlayAgain = { onAction(GamePlayAction.OnPlayAgain) },
                         onViewLeaderboard = { onAction(GamePlayAction.OnViewLeaderboard) },
                         onHome = { onAction(GamePlayAction.OnNavigateHome) }
@@ -133,6 +142,7 @@ fun GamePlayScreen(
                     GameResultBanner(
                         won = false,
                         revealedWord = state.word,
+                        score = state.pendingScore,
                         onPlayAgain = { onAction(GamePlayAction.OnPlayAgain) },
                         onViewLeaderboard = { onAction(GamePlayAction.OnViewLeaderboard) },
                         onHome = { onAction(GamePlayAction.OnNavigateHome) }
@@ -141,12 +151,101 @@ fun GamePlayScreen(
             }
         }
     }
+
+    if (state.showNicknameDialog) {
+        NicknameDialog(
+            score = state.pendingScore,
+            won = state.gameStatus == GameStatus.Won,
+            nickname = state.nickname,
+            onNicknameChange = { onAction(GamePlayAction.OnNicknameChange(it)) },
+            onConfirm = { onAction(GamePlayAction.OnNicknameConfirmed) },
+            onSkip = { onAction(GamePlayAction.OnNicknameSkipped) }
+        )
+    }
+}
+
+@Composable
+private fun NicknameDialog(
+    score: Int,
+    won: Boolean,
+    nickname: String,
+    onNicknameChange: (String) -> Unit,
+    onConfirm: () -> Unit,
+    onSkip: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onSkip,
+        title = {
+            Text(
+                text = stringResource(R.string.nickname_dialog_title),
+                style = MaterialTheme.typography.titleLarge.copy(fontFamily = FontFamily.Monospace)
+            )
+        },
+        text = {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                if (won) {
+                    Text(
+                        text = stringResource(R.string.nickname_dialog_score, score),
+                        style = MaterialTheme.typography.headlineMedium.copy(
+                            fontFamily = FontFamily.Monospace,
+                            color = MaterialTheme.colorScheme.primary
+                        ),
+                        textAlign = TextAlign.Center
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                }
+                Text(
+                    text = if (won) stringResource(R.string.nickname_dialog_subtitle_won)
+                    else stringResource(R.string.nickname_dialog_subtitle_lost),
+                    style = MaterialTheme.typography.bodyMedium,
+                    textAlign = TextAlign.Center
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                OutlinedTextField(
+                    value = nickname,
+                    onValueChange = { onNicknameChange(it.filter { c -> c.isLetter() || c.isDigit() }) },
+                    label = { Text(stringResource(R.string.nickname_dialog_field_label)) },
+                    singleLine = true,
+                    textStyle = MaterialTheme.typography.bodyLarge.copy(fontFamily = FontFamily.Monospace),
+                    keyboardOptions = KeyboardOptions(
+                        capitalization = KeyboardCapitalization.Characters,
+                        imeAction = ImeAction.Done
+                    ),
+                    keyboardActions = KeyboardActions(onDone = { onConfirm() }),
+                    supportingText = {
+                        Text(
+                            text = "${nickname.length}/$MAX_NICKNAME_LENGTH",
+                            modifier = Modifier.fillMaxWidth(),
+                            textAlign = TextAlign.End
+                        )
+                    }
+                )
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = onConfirm) {
+                Text(
+                    text = stringResource(R.string.nickname_dialog_confirm),
+                    style = MaterialTheme.typography.labelLarge.copy(fontFamily = FontFamily.Monospace)
+                )
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onSkip) {
+                Text(
+                    text = stringResource(R.string.nickname_dialog_skip),
+                    style = MaterialTheme.typography.labelLarge
+                )
+            }
+        }
+    )
 }
 
 @Composable
 private fun GameResultBanner(
     won: Boolean,
     revealedWord: String?,
+    score: Int,
     onPlayAgain: () -> Unit,
     onViewLeaderboard: () -> Unit,
     onHome: () -> Unit,
@@ -171,6 +270,17 @@ private fun GameResultBanner(
                 style = MaterialTheme.typography.headlineMedium,
                 textAlign = TextAlign.Center
             )
+            if (won && score > 0) {
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = stringResource(R.string.game_score_display, score),
+                    style = MaterialTheme.typography.titleMedium.copy(
+                        fontFamily = FontFamily.Monospace
+                    ),
+                    color = MaterialTheme.colorScheme.primary,
+                    textAlign = TextAlign.Center
+                )
+            }
             if (!won && revealedWord != null) {
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
@@ -228,7 +338,8 @@ private fun GamePlayScreenWonPreview() {
                 displayWord = "E L E P H A N T",
                 gameStatus = GameStatus.Won,
                 wrongGuesses = 2,
-                maxAttempts = 6
+                maxAttempts = 6,
+                pendingScore = 1000
             ),
             onAction = {}
         )
@@ -246,7 +357,29 @@ private fun GamePlayScreenLostPreview() {
                 displayWord = "_ _ _ _ _ _ _ _",
                 gameStatus = GameStatus.Lost,
                 wrongGuesses = 6,
-                maxAttempts = 6
+                maxAttempts = 6,
+                pendingScore = 0
+            ),
+            onAction = {}
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun NicknameDialogPreview() {
+    HangmanTheme {
+        GamePlayScreen(
+            state = GamePlayState(
+                word = "ELEPHANT",
+                category = "Animals",
+                displayWord = "E L E P H A N T",
+                gameStatus = GameStatus.Won,
+                wrongGuesses = 1,
+                maxAttempts = 6,
+                pendingScore = 1200,
+                showNicknameDialog = true,
+                nickname = "ACE"
             ),
             onAction = {}
         )

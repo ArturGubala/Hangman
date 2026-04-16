@@ -13,7 +13,7 @@ val gameDataModule = module {
             androidContext(),
             HangmanDatabase::class.java,
             "hangman.db"
-        ).build()
+        ).fallbackToDestructiveMigration().build()
     }
     single { get<HangmanDatabase>().gameResultDao() }
     single<LeaderboardRepository> { RoomLeaderboardRepository(get()) }

@@ -30,6 +30,13 @@ class GamePlayViewModel(
     fun onAction(action: GamePlayAction) {
         when (action) {
             is GamePlayAction.OnLetterClick -> guessLetter(action.letter)
+            is GamePlayAction.OnNicknameChange -> {
+                _state.update {
+                    it.copy(nickname = action.value.take(MAX_NICKNAME_LENGTH))
+                }
+            }
+            GamePlayAction.OnNicknameConfirmed -> saveResultAndDismissDialog()
+            GamePlayAction.OnNicknameSkipped -> _state.update { it.copy(showNicknameDialog = false) }
             GamePlayAction.OnPlayAgain -> startNewGame()
             GamePlayAction.OnViewLeaderboard -> {
                 viewModelScope.launch {
@@ -86,12 +93,20 @@ class GamePlayViewModel(
         }
 
         if (newStatus != GameStatus.Playing) {
-            saveResult(newStatus == GameStatus.Won)
+            val score = gameEngine.calculateScore(current.word, wrongGuesses, won)
+            _state.update {
+                it.copy(
+                    pendingScore = score,
+                    showNicknameDialog = true,
+                    nickname = ""
+                )
+            }
         }
     }
 
-    private fun saveResult(won: Boolean) {
+    private fun saveResultAndDismissDialog() {
         val current = _state.value
+        _state.update { it.copy(showNicknameDialog = false) }
         viewModelScope.launch {
             leaderboardRepository.saveResult(
                 GameResult(
@@ -99,7 +114,9 @@ class GamePlayViewModel(
                     category = current.category,
                     attemptsUsed = current.wrongGuesses,
                     maxAttempts = current.maxAttempts,
-                    won = won,
+                    won = current.gameStatus == GameStatus.Won,
+                    score = current.pendingScore,
+                    nickname = current.nickname.uppercase().ifBlank { "ANON" },
                     playedAt = System.currentTimeMillis()
                 )
             )

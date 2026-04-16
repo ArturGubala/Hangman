@@ -14,17 +14,26 @@
     <string name="game_won_title">You Won!</string>
     <string name="game_lost_title">Game Over</string>
     <string name="game_lost_word_reveal">The word was: %s</string>
+    <string name="game_score_display">Score: %d pts</string>
     <string name="game_play_again">Play Again</string>
     <string name="game_view_leaderboard">View Leaderboard</string>
     <string name="game_home">Home</string>
     <string name="cd_hangman_drawing">Hangman drawing showing %d wrong guesses</string>
     <string name="cd_letter_button">Letter %s</string>
 
+    <!-- Nickname dialog -->
+    <string name="nickname_dialog_title">ENTER YOUR NAME</string>
+    <string name="nickname_dialog_score">%d PTS</string>
+    <string name="nickname_dialog_subtitle_won">Your score has been recorded.\nEnter your name for the leaderboard.</string>
+    <string name="nickname_dialog_subtitle_lost">Better luck next time.\nEnter your name to record the attempt.</string>
+    <string name="nickname_dialog_field_label">Name (max 10 chars)</string>
+    <string name="nickname_dialog_confirm">Save</string>
+    <string name="nickname_dialog_skip">Skip</string>
+
     <!-- Leaderboard -->
     <string name="leaderboard_title">Leaderboard</string>
-    <string name="leaderboard_empty">No games played yet.\nStart a game to see your results here!</string>
-    <string name="leaderboard_won">Won</string>
-    <string name="leaderboard_lost">Lost</string>
-    <string name="leaderboard_attempts">%d / %d attempts</string>
+    <string name="leaderboard_high_scores">High Scores</string>
+    <string name="leaderboard_empty_title">No records yet</string>
+    <string name="leaderboard_empty_subtitle">Play a game to claim\nthe top spot!</string>
     <string name="cd_back">Back</string>
 </resources>

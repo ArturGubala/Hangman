@@ -16,3 +16,12 @@ val HangmanBackground = Color(0xFFFFFFFF)
 
 val HangmanGallows = Color(0xFF4E342E)
 val HangmanBody = Color(0xFF212121)
+
+// Arcade leaderboard palette
+val ArcadeBg = Color(0xFF0D0D0D)
+val ArcadePanel = Color(0xFF1A1A2E)
+val ArcadeAmber = Color(0xFFFFB300)
+val ArcadeCyan = Color(0xFF00E5FF)
+val ArcadeGreen = Color(0xFF00E676)
+val ArcadeRed = Color(0xFFFF1744)
+val ArcadeDivider = Color(0xFF2A2A4A)

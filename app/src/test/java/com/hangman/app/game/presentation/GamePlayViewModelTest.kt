@@ -5,7 +5,6 @@ import assertk.assertThat
 import assertk.assertions.contains
 import assertk.assertions.isEqualTo
 import assertk.assertions.isFalse
-import assertk.assertions.isGreaterThan
 import assertk.assertions.isNotEmpty
 import assertk.assertions.isTrue
 import com.hangman.app.game.domain.GameEngine
@@ -13,6 +12,7 @@ import com.hangman.app.game.presentation.game_play.GamePlayAction
 import com.hangman.app.game.presentation.game_play.GamePlayEvent
 import com.hangman.app.game.presentation.game_play.GamePlayViewModel
 import com.hangman.app.game.presentation.game_play.GameStatus
+import com.hangman.app.game.presentation.game_play.MAX_NICKNAME_LENGTH
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
@@ -91,7 +91,7 @@ class GamePlayViewModelTest {
     }
 
     @Test
-    fun `reaching maxAttempts sets status to Lost and saves result`() = runTest {
+    fun `reaching maxAttempts shows nickname dialog with zero score`() = runTest {
         val word = viewModel.state.value.word
         val wrongLetters = ('A'..'Z').filter { it !in word }.take(6)
 
@@ -101,13 +101,33 @@ class GamePlayViewModelTest {
             }
         }
 
-        assertThat(viewModel.state.value.gameStatus).isEqualTo(GameStatus.Lost)
-        assertThat(fakeRepository.savedResults.isNotEmpty()).isTrue()
-        assertThat(fakeRepository.savedResults.last().won).isFalse()
+        val state = viewModel.state.value
+        assertThat(state.gameStatus).isEqualTo(GameStatus.Lost)
+        assertThat(state.showNicknameDialog).isTrue()
+        assertThat(state.pendingScore).isEqualTo(0)
     }
 
     @Test
-    fun `guessing all letters sets status to Won and saves result`() = runTest {
+    fun `confirming nickname saves Lost result`() = runTest {
+        val word = viewModel.state.value.word
+        val wrongLetters = ('A'..'Z').filter { it !in word }.take(6)
+        wrongLetters.forEach { letter ->
+            if (viewModel.state.value.gameStatus == GameStatus.Playing) {
+                viewModel.onAction(GamePlayAction.OnLetterClick(letter))
+            }
+        }
+
+        viewModel.onAction(GamePlayAction.OnNicknameChange("ACE"))
+        viewModel.onAction(GamePlayAction.OnNicknameConfirmed)
+
+        assertThat(fakeRepository.savedResults.isNotEmpty()).isTrue()
+        assertThat(fakeRepository.savedResults.last().won).isFalse()
+        assertThat(fakeRepository.savedResults.last().nickname).isEqualTo("ACE")
+        assertThat(viewModel.state.value.showNicknameDialog).isFalse()
+    }
+
+    @Test
+    fun `guessing all letters shows nickname dialog with positive score`() = runTest {
         val word = viewModel.state.value.word
         word.toSet().forEach { letter ->
             if (viewModel.state.value.gameStatus == GameStatus.Playing) {
@@ -115,22 +135,53 @@ class GamePlayViewModelTest {
             }
         }
 
-        assertThat(viewModel.state.value.gameStatus).isEqualTo(GameStatus.Won)
+        val state = viewModel.state.value
+        assertThat(state.gameStatus).isEqualTo(GameStatus.Won)
+        assertThat(state.showNicknameDialog).isTrue()
+        assertThat(state.pendingScore > 0).isTrue()
+    }
+
+    @Test
+    fun `confirming nickname saves Won result`() = runTest {
+        val word = viewModel.state.value.word
+        word.toSet().forEach { letter ->
+            if (viewModel.state.value.gameStatus == GameStatus.Playing) {
+                viewModel.onAction(GamePlayAction.OnLetterClick(letter))
+            }
+        }
+
+        viewModel.onAction(GamePlayAction.OnNicknameChange("HERO"))
+        viewModel.onAction(GamePlayAction.OnNicknameConfirmed)
+
         assertThat(fakeRepository.savedResults.isNotEmpty()).isTrue()
         assertThat(fakeRepository.savedResults.last().won).isTrue()
+        assertThat(fakeRepository.savedResults.last().nickname).isEqualTo("HERO")
+    }
+
+    @Test
+    fun `blank nickname saves as ANON`() = runTest {
+        val word = viewModel.state.value.word
+        word.toSet().forEach { letter ->
+            if (viewModel.state.value.gameStatus == GameStatus.Playing) {
+                viewModel.onAction(GamePlayAction.OnLetterClick(letter))
+            }
+        }
+
+        viewModel.onAction(GamePlayAction.OnNicknameConfirmed)
+
+        assertThat(fakeRepository.savedResults.last().nickname).isEqualTo("ANON")
     }
 
     @Test
     fun `OnPlayAgain resets state with a new game`() = runTest {
-        val firstWord = viewModel.state.value.word
         viewModel.onAction(GamePlayAction.OnLetterClick('A'))
-
         viewModel.onAction(GamePlayAction.OnPlayAgain)
 
         val state = viewModel.state.value
         assertThat(state.guessedLetters.isEmpty()).isTrue()
         assertThat(state.wrongGuesses).isEqualTo(0)
         assertThat(state.gameStatus).isEqualTo(GameStatus.Playing)
+        assertThat(state.showNicknameDialog).isFalse()
     }
 
     @Test
@@ -147,5 +198,11 @@ class GamePlayViewModelTest {
             viewModel.onAction(GamePlayAction.OnNavigateHome)
             assertThat(awaitItem()).isEqualTo(GamePlayEvent.NavigateHome)
         }
+    }
+
+    @Test
+    fun `nickname is capped at MAX_NICKNAME_LENGTH characters`() = runTest {
+        viewModel.onAction(GamePlayAction.OnNicknameChange("ABCDEFGHIJKLMNOP"))
+        assertThat(viewModel.state.value.nickname.length).isEqualTo(10)
     }
 }

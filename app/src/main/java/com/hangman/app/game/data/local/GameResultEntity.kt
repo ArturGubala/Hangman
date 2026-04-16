@@ -13,6 +13,8 @@ data class GameResultEntity(
     val attemptsUsed: Int,
     val maxAttempts: Int,
     val won: Boolean,
+    val score: Int,
+    val nickname: String,
     val playedAt: Long
 )
 
@@ -23,6 +25,8 @@ fun GameResultEntity.toGameResult(): GameResult = GameResult(
     attemptsUsed = attemptsUsed,
     maxAttempts = maxAttempts,
     won = won,
+    score = score,
+    nickname = nickname,
     playedAt = playedAt
 )
 
@@ -33,5 +37,7 @@ fun GameResult.toGameResultEntity(): GameResultEntity = GameResultEntity(
     attemptsUsed = attemptsUsed,
     maxAttempts = maxAttempts,
     won = won,
+    score = score,
+    nickname = nickname,
     playedAt = playedAt
 )

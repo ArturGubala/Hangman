@@ -12,6 +12,6 @@ interface GameResultDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(entity: GameResultEntity)
 
-    @Query("SELECT * FROM game_results ORDER BY playedAt DESC")
+    @Query("SELECT * FROM game_results ORDER BY score DESC, playedAt DESC")
     fun getAllResults(): Flow<List<GameResultEntity>>
 }

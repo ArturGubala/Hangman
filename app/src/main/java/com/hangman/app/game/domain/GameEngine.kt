@@ -77,4 +77,18 @@ class GameEngine {
     fun wrongGuessCount(word: String, guessedLetters: Set<Char>): Int {
         return guessedLetters.count { it !in word }
     }
+
+    /**
+     * Score formula:
+     *   - Loss → 0 pts
+     *   - Win  → saved_attempts_bonus + word_length_bonus
+     *     saved_attempts_bonus = (maxAttempts - wrongGuesses) * 200
+     *     word_length_bonus    = word.length * 25
+     *
+     * Range: ~275 (shortest word, 1 life left) → 1450 (10-letter word, perfect).
+     */
+    fun calculateScore(word: String, wrongGuesses: Int, won: Boolean): Int {
+        if (!won) return 0
+        return (maxAttempts - wrongGuesses) * 200 + word.length * 25
+    }
 }

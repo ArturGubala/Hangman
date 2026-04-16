@@ -7,5 +7,7 @@ data class GameResult(
     val attemptsUsed: Int,
     val maxAttempts: Int,
     val won: Boolean,
+    val score: Int,
+    val nickname: String,
     val playedAt: Long
 )
