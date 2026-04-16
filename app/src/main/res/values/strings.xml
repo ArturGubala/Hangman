@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Hangman</string>
+
+    <!-- Home -->
+    <string name="home_title">Hangman</string>
+    <string name="home_subtitle">Guess the word before it\'s too late!</string>
+    <string name="home_start_game">Start Game</string>
+    <string name="home_leaderboard">Leaderboard</string>
+
+    <!-- Game Play -->
+    <string name="game_category_label">Category: %s</string>
+    <string name="game_attempts_remaining">%d attempts remaining</string>
+    <string name="game_won_title">You Won!</string>
+    <string name="game_lost_title">Game Over</string>
+    <string name="game_lost_word_reveal">The word was: %s</string>
+    <string name="game_play_again">Play Again</string>
+    <string name="game_view_leaderboard">View Leaderboard</string>
+    <string name="game_home">Home</string>
+    <string name="cd_hangman_drawing">Hangman drawing showing %d wrong guesses</string>
+    <string name="cd_letter_button">Letter %s</string>
+
+    <!-- Leaderboard -->
+    <string name="leaderboard_title">Leaderboard</string>
+    <string name="leaderboard_empty">No games played yet.\nStart a game to see your results here!</string>
+    <string name="leaderboard_won">Won</string>
+    <string name="leaderboard_lost">Lost</string>
+    <string name="leaderboard_attempts">%d / %d attempts</string>
+    <string name="cd_back">Back</string>
+</resources>
